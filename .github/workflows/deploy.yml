@@ -1,0 +1,41 @@
+name: 'Action Approval'
+
+on:
+  push:
+    branches:
+      - "main"
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+        # Checkout the repo
+        - name: Checkout teh repo 
+          uses: actions/checkout@master
+
+        - name: Build the artifact
+          run: |
+            echo "Building the application"
+
+      
+  deploy-dev:
+    runs-on: 'ubuntu-latest'
+    environment: 'dev'
+    needs: build
+    steps:
+
+      - name: Build the artifact
+        run: |
+          echo "Deploying the application on the dev environment."
+
+  deploy-prod:
+    runs-on: 'ubuntu-latest'
+    environment: 'prod'
+    needs: [build, deploy-dev]
+    steps:
+
+      - name: Build the artifact
+        run: |
+          echo "Deploying the application on the prod environment."
