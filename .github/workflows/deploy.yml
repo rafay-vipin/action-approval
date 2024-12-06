@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - "main"
+      - "v*.*.*"
+    paths:
+      - 'core-dev.yaml'
+      - 'core-stg.yaml'
+      - 'core-prod.yaml'
+      - 'os-dev.yaml'
+      - 'os-stg.yaml'
+      - 'os-prod.yaml'
+      - 'artifact-prod.yaml'
+      - 'artifact-dev.yaml'
+      - 'artifact-stg.yaml'
 
 
 jobs:
