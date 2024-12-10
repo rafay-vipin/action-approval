@@ -1,0 +1,67 @@
+name: CI/CD Workflow with Approval
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Development Job
+  dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run dev tests
+        run: echo "Running dev tests"
+
+  # Staging Job
+  stage:
+    runs-on: ubuntu-latest
+    needs: dev  # Stage depends on dev job
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run stage tests
+        run: echo "Running stage tests"
+
+  # Production Job with Sub-jobs and Approvals
+  prod:
+    runs-on: ubuntu-latest
+    needs: stage  # Prod depends on stage job
+    environment:
+      name: prod
+      url: https://example.com  # URL for the production environment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+  # Sub-job 1 inside prod
+  prod_sub_job_1:
+    runs-on: ubuntu-latest
+    needs: prod  # prod_sub_job_1 depends on prod
+    steps:
+      - name: Run prod step 1
+        run: echo "Running step 1 for prod"
+  
+  # Sub-job 2 inside prod (requires approval)
+  prod_sub_job_2:
+    runs-on: ubuntu-latest
+    needs: prod_sub_job_1  # Runs after prod_sub_job_1
+    environment: 
+      name: prod  # Will trigger approval from environment protection rules
+    steps:
+      - name: Run prod step 2
+        run: echo "Running step 2 for prod"
+    
+  # Sub-job 3 inside prod (requires approval)
+  prod_sub_job_3:
+    runs-on: ubuntu-latest
+    needs: prod_sub_job_2  # Runs after prod_sub_job_2
+    environment: 
+      name: prod  # Will trigger approval from environment protection rules
+    steps:
+      - name: Run prod step 3
+        run: echo "Running step 3 for prod"
+
