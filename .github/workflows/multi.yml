@@ -1,7 +1,6 @@
-name: CI/CD Workflow with Approval
+name: CI/CD Workflow with Parallel Sub-jobs
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -10,13 +9,19 @@ jobs:
   # Development Job
   dev:
     runs-on: ubuntu-latest
+    outputs:
+      dev_output: ${{ steps.set_output.outputs.dev_value }}  # Output value to be used in the prod job
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Run dev tests
-        run: echo "Running dev tests"
 
-  # Staging Job
+      - name: Set output value in dev
+        id: set_output
+        run: |
+          echo "dev_value=Hello from dev" >> $GITHUB_ENV
+          echo "::set-output name=dev_value::Hello from dev"
+    
+  # Staging Job (optional, you can skip or add logic here)
   stage:
     runs-on: ubuntu-latest
     needs: dev  # Stage depends on dev job
@@ -26,42 +31,38 @@ jobs:
       - name: Run stage tests
         run: echo "Running stage tests"
 
-  # Production Job with Sub-jobs and Approvals
+  # Production Job that references output from dev job
   prod:
     runs-on: ubuntu-latest
-    needs: stage  # Prod depends on stage job
-    environment:
-      name: prod
-      url: https://example.com  # URL for the production environment
+    needs: stage  # Prod depends on stage
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
-  # Sub-job 1 inside prod
+
+  # Sub-job 1 in prod (runs in parallel with others)
   prod_sub_job_1:
     runs-on: ubuntu-latest
-    needs: prod  # prod_sub_job_1 depends on prod
+    needs: prod  # Depends on the prod job
     steps:
       - name: Run prod step 1
         run: echo "Running step 1 for prod"
-  
-  # Sub-job 2 inside prod (requires approval)
+
+  # Sub-job 2 in prod (runs in parallel with prod_sub_job_1)
   prod_sub_job_2:
     runs-on: ubuntu-latest
-    needs: prod_sub_job_1  # Runs after prod_sub_job_1
+    needs: prod  # Depends on the prod job
     environment: 
-      name: prod  # Will trigger approval from environment protection rules
+      name: production  # Triggers approval process in prod
     steps:
       - name: Run prod step 2
         run: echo "Running step 2 for prod"
-    
-  # Sub-job 3 inside prod (requires approval)
+
+  # Sub-job 3 in prod (runs in parallel with prod_sub_job_1 and prod_sub_job_2)
   prod_sub_job_3:
     runs-on: ubuntu-latest
-    needs: prod_sub_job_2  # Runs after prod_sub_job_2
+    needs: prod  # Depends on the prod job
     environment: 
-      name: prod  # Will trigger approval from environment protection rules
+      name: production  # Triggers approval process in prod
     steps:
       - name: Run prod step 3
         run: echo "Running step 3 for prod"
-
