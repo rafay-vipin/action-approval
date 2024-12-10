@@ -89,6 +89,7 @@ jobs:
 
   # Sub-job 4 in dev (upgrade_artifact_upload) - Needs approval
   upgrade_artifact_upload_dev:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs: dev  # Depends on dev job
     environment: 
@@ -123,6 +124,7 @@ jobs:
 
   # Sub-job 4 in stage (upgrade_artifact_upload) - Needs approval
   upgrade_artifact_upload_stage:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs: stage  # Depends on stage job
     environment: 
@@ -157,6 +159,7 @@ jobs:
 
   # Sub-job 4 in prod (upgrade_artifact_upload) - Needs approval
   upgrade_artifact_upload_prod:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs: prod  # Depends on prod job
     environment: 
