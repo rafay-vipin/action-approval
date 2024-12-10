@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: prod  # Depends on prod job
     environment: 
-      name: production  # Requires approval
+      name: prod  # Requires approval
     steps:
       - name: Upload upgrade artifacts for prod
         run: echo "Uploading upgrade artifacts for prod"
