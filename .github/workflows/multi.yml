@@ -1,4 +1,4 @@
-name: CI/CD Workflow with Parallel Sub-jobs
+name: CI/CD Workflow with Sub-jobs and Manual Approvals
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
   dev:
     runs-on: ubuntu-latest
     outputs:
-      dev_output: ${{ steps.set_output.outputs.dev_value }}  # Output value to be used in the prod job
+      dev_output: ${{ steps.set_output.outputs.dev_value }}  # Output value to be used in prod and stage jobs
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -20,18 +20,16 @@ jobs:
         run: |
           echo "dev_value=Hello from dev" >> $GITHUB_ENV
           echo "::set-output name=dev_value::Hello from dev"
-    
-  # Staging Job (optional, you can skip or add logic here)
+
+  # Staging Job
   stage:
     runs-on: ubuntu-latest
     needs: dev  # Stage depends on dev job
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Run stage tests
-        run: echo "Running stage tests"
 
-  # Production Job that references output from dev job
+  # Production Job
   prod:
     runs-on: ubuntu-latest
     needs: stage  # Prod depends on stage
@@ -39,30 +37,104 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-  # Sub-job 1 in prod (runs in parallel with others)
-  prod_sub_job_1:
+  # Sub-job 1 in dev (core_image_push)
+  core_image_push_dev:
     runs-on: ubuntu-latest
-    needs: prod  # Depends on the prod job
+    needs: dev  # Depends on dev job
     steps:
-      - name: Run prod step 1
-        run: echo "Running step 1 for prod"
+      - name: Push core image for dev
+        run: echo "Pushing core image for dev"
 
-  # Sub-job 2 in prod (runs in parallel with prod_sub_job_1)
-  prod_sub_job_2:
+  # Sub-job 2 in dev (opensource_image_push)
+  opensource_image_push_dev:
     runs-on: ubuntu-latest
-    needs: prod  # Depends on the prod job
-    environment: 
-      name: production  # Triggers approval process in prod
+    needs: dev  # Depends on dev job
     steps:
-      - name: Run prod step 2
-        run: echo "Running step 2 for prod"
+      - name: Push opensource image for dev
+        run: echo "Pushing opensource image for dev"
 
-  # Sub-job 3 in prod (runs in parallel with prod_sub_job_1 and prod_sub_job_2)
-  prod_sub_job_3:
+  # Sub-job 3 in dev (pre_upgrade_artifact_upload)
+  pre_upgrade_artifact_upload_dev:
     runs-on: ubuntu-latest
-    needs: prod  # Depends on the prod job
-    environment: 
-      name: production  # Triggers approval process in prod
+    needs: dev  # Depends on dev job
     steps:
-      - name: Run prod step 3
-        run: echo "Running step 3 for prod"
+      - name: Upload pre-upgrade artifacts for dev
+        run: echo "Uploading pre-upgrade artifacts for dev"
+
+  # Sub-job 4 in dev (upgrade_artifact_upload) - Needs approval
+  upgrade_artifact_upload_dev:
+    runs-on: ubuntu-latest
+    needs: dev  # Depends on dev job
+    environment: 
+      name: dev  # Requires approval
+    steps:
+      - name: Upload upgrade artifacts for dev
+        run: echo "Uploading upgrade artifacts for dev"
+
+  # Sub-job 1 in stage (core_image_push)
+  core_image_push_stage:
+    runs-on: ubuntu-latest
+    needs: stage  # Depends on stage job
+    steps:
+      - name: Push core image for stage
+        run: echo "Pushing core image for stage"
+
+  # Sub-job 2 in stage (opensource_image_push)
+  opensource_image_push_stage:
+    runs-on: ubuntu-latest
+    needs: stage  # Depends on stage job
+    steps:
+      - name: Push opensource image for stage
+        run: echo "Pushing opensource image for stage"
+
+  # Sub-job 3 in stage (pre_upgrade_artifact_upload)
+  pre_upgrade_artifact_upload_stage:
+    runs-on: ubuntu-latest
+    needs: stage  # Depends on stage job
+    steps:
+      - name: Upload pre-upgrade artifacts for stage
+        run: echo "Uploading pre-upgrade artifacts for stage"
+
+  # Sub-job 4 in stage (upgrade_artifact_upload) - Needs approval
+  upgrade_artifact_upload_stage:
+    runs-on: ubuntu-latest
+    needs: stage  # Depends on stage job
+    environment: 
+      name: dev  # Requires approval
+    steps:
+      - name: Upload upgrade artifacts for stage
+        run: echo "Uploading upgrade artifacts for stage"
+
+  # Sub-job 1 in prod (core_image_push)
+  core_image_push_prod:
+    runs-on: ubuntu-latest
+    needs: prod  # Depends on prod job
+    steps:
+      - name: Push core image for prod
+        run: echo "Pushing core image for prod"
+
+  # Sub-job 2 in prod (opensource_image_push)
+  opensource_image_push_prod:
+    runs-on: ubuntu-latest
+    needs: prod  # Depends on prod job
+    steps:
+      - name: Push opensource image for prod
+        run: echo "Pushing opensource image for prod"
+
+  # Sub-job 3 in prod (pre_upgrade_artifact_upload)
+  pre_upgrade_artifact_upload_prod:
+    runs-on: ubuntu-latest
+    needs: prod  # Depends on prod job
+    steps:
+      - name: Upload pre-upgrade artifacts for prod
+        run: echo "Uploading pre-upgrade artifacts for prod"
+
+  # Sub-job 4 in prod (upgrade_artifact_upload) - Needs approval
+  upgrade_artifact_upload_prod:
+    runs-on: ubuntu-latest
+    needs: prod  # Depends on prod job
+    environment: 
+      name: production  # Requires approval
+    steps:
+      - name: Upload upgrade artifacts for prod
+        run: echo "Uploading upgrade artifacts for prod"
