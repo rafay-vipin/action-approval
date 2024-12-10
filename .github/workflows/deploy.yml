@@ -31,7 +31,7 @@ jobs:
             echo "Building the application"
 
       
-  deploy-dev:
+  dev:
     runs-on: 'ubuntu-latest'
     environment: 'dev'
     needs: build
@@ -41,10 +41,10 @@ jobs:
         run: |
           echo "Deploying the application on the dev environment."
 
-  deploy-prod:
+  prod:
     runs-on: 'ubuntu-latest'
     environment: 'prod'
-    needs: [build, deploy-dev]
+    needs: [build, dev]
     steps:
 
       - name: Build the artifact
