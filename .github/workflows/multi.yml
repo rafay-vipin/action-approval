@@ -47,7 +47,7 @@ jobs:
 
   # Staging Job
   stage:
-    if: ${{ startsWith(needs.set_up.outputs.branch_output, 'v.') }}
+    if: ${{ startsWith(needs.set_up.outputs.branch_output, 'v') }}
     runs-on: ubuntu-latest
     needs: set_up   # Stage depends on dev job
     steps:
@@ -56,7 +56,7 @@ jobs:
 
   # Production Job
   prod:
-    if: ${{ startsWith(needs.set_up.outputs.branch_output, 'v.') }}
+    if: ${{ startsWith(needs.set_up.outputs.branch_output, 'v') }}
     runs-on: ubuntu-latest
     needs: set_up  # Prod depends on stage
     steps:
