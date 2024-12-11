@@ -31,7 +31,7 @@ jobs:
 
       - name: Check changed files
         run: |
-          echo ${{ github.event.head_commit.modified }}
+          echo "${{ join(github.event.head_commit.modified, ', ') }}"
       
 
   dev:
