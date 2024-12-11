@@ -31,25 +31,26 @@ jobs:
 
       - name: Check changed files
         run: |
+          echo "${{ toJson(github.event) }}"
           echo "${{ join(github.event.head_commit.modified, ', ') }}"
       
 
-  dev:
-    runs-on: 'ubuntu-latest'
-    environment: 'dev'
-    needs: build
-    steps:
+  # dev:
+  #   runs-on: 'ubuntu-latest'
+  #   environment: 'dev'
+  #   needs: build
+  #   steps:
 
-      - name: Build the artifact
-        run: |
-          echo "Deploying the application on the dev environment."
+  #     - name: Build the artifact
+  #       run: |
+  #         echo "Deploying the application on the dev environment."
 
-  prod:
-    runs-on: 'ubuntu-latest'
-    environment: 'prod'
-    needs: [build, dev]
-    steps:
+  # prod:
+  #   runs-on: 'ubuntu-latest'
+  #   environment: 'prod'
+  #   needs: [build, dev]
+  #   steps:
 
-      - name: Build the artifact
-        run: |
-          echo "Deploying the application on the prod environment."
+  #     - name: Build the artifact
+  #       run: |
+  #         echo "Deploying the application on the prod environment."
