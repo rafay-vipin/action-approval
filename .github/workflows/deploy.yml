@@ -5,16 +5,16 @@ on:
     branches:
       - "main"
       - "v*.*.*"
-    paths:
-      - 'core-dev.yaml'
-      - 'core-stg.yaml'
-      - 'core-prod.yaml'
-      - 'os-dev.yaml'
-      - 'os-stg.yaml'
-      - 'os-prod.yaml'
-      - 'artifact-prod.yaml'
-      - 'artifact-dev.yaml'
-      - 'artifact-stg.yaml'
+    # paths:
+    #   - 'core-dev.yaml'
+    #   - 'core-stg.yaml'
+    #   - 'core-prod.yaml'
+    #   - 'os-dev.yaml'
+    #   - 'os-stg.yaml'
+    #   - 'os-prod.yaml'
+    #   - 'artifact-prod.yaml'
+    #   - 'artifact-dev.yaml'
+    #   - 'artifact-stg.yaml'
 
 
 jobs:
@@ -22,15 +22,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-        # Checkout the repo
-        - name: Checkout teh repo 
-          uses: actions/checkout@master
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-        - name: Build the artifact
-          run: |
-            echo "Building the application"
+      - name: Build the artifact
+        run: |
+          echo "Building the application"
 
+      - name: Check changed files
+        run: |
+          echo ${{ github.event.head_commit.modified }}
       
+
   dev:
     runs-on: 'ubuntu-latest'
     environment: 'dev'
