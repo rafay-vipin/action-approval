@@ -74,7 +74,7 @@ jobs:
     - name: Run Template Loader script
       working-directory: ./setup
       run: |
-        python -u template-loader.py
+        echo "${VALUES_FILE}"
       env:
         PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
         VALUES_FILE: "./values-qc.yaml"
@@ -104,7 +104,7 @@ jobs:
     - name: Run Template Loader script
       working-directory: ./setup
       run: |
-        python -u template-loader.py
+        echo "${VALUES_FILE}"
       env:
         PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
         VALUES_FILE: "./values-preview.yaml"
@@ -130,7 +130,7 @@ jobs:
     - name: Run Template Loader script
       working-directory: ./setup
       run: |
-        python -u template-loader.py
+        echo "${VALUES_FILE}"
       env:
         PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
         VALUES_FILE: "./values-prod.yaml"
