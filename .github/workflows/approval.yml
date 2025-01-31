@@ -13,11 +13,51 @@ on:
           - prod
 
 jobs:
+  check-env:
+    runs-on: 'ubuntu-latest'
+    outputs:
+      qc_changed: ${{ steps.get_changed_files.outputs.qc_changed }}
+      preview_changed: ${{ steps.get_changed_files.outputs.preview_changed }}
+      prod_changed: ${{ steps.get_changed_files.outputs.prod_changed }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Check changed values file
+      if: ${{ github.event_name != 'workflow_dispatch' }}
+      id: get_changed_files
+      run: |
+        # git fetch --unshallow
+        # Get the list of modified files
+        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+        # Print the modified files for debugging
+        echo "Modified files: $CHANGED_FILES"
+
+        if [[ "$CHANGED_FILES" == *"setup/values-qc.yaml"* ]]; then
+          echo "values-qc.yaml is changed."
+          echo "qc_changed=true" >> $GITHUB_OUTPUT
+        fi
+
+        if [[ "$CHANGED_FILES" == *"setup/values-preview.yaml"* ]]; then
+          echo "values-preview.yaml is changed."
+          echo "preview_changed=true" >> $GITHUB_OUTPUT
+        fi
+        
+        if [[ "$CHANGED_FILES" == *"setup/values-prod.yaml"* ]]; then
+          echo "values-prod.yaml is changed."
+          echo "prod_changed=true" >> $GITHUB_OUTPUT
+        fi
   qc:
     runs-on: 'ubuntu-latest'
     environment: 'qc'
-    if: ${{ github.event.inputs.environment == 'qc' }}
+    needs: check-env
+    if: ${{ needs.check-env.outputs.qc_changed == 'true' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'qc') }}
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Set up Python 3.x
       uses: actions/setup-python@v4
       with:
@@ -42,8 +82,12 @@ jobs:
   preview:
     runs-on: 'ubuntu-latest'
     environment: 'dev'
-    if: ${{ github.event.inputs.environment == 'preview' }}
+    needs: check-env
+    if: ${{ needs.check-env.outputs.preview_changed == 'true' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'preview') }}
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Set up Python 3.x
       uses: actions/setup-python@v4
       with:
@@ -68,8 +112,12 @@ jobs:
   prod:
     runs-on: 'ubuntu-latest'
     environment: 'prod'
-    if: ${{ github.event.inputs.environment == 'prod' }}
+    needs: check-env
+    if: ${{ needs.check-env.outputs.prod_changed == 'true' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'prod') }}
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
     - name: Set up Python 3.x
       uses: actions/setup-python@v4
       with:
