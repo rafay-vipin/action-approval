@@ -1,4 +1,4 @@
-name: 'Action Approval'
+name: 'Action Approval new'
 
 on:
   workflow_dispatch:
@@ -12,46 +12,33 @@ on:
           - preview
           - prod
 
-
 jobs:
-  set-env:
-    runs-on: ubuntu-latest
-    outputs: 
-      values_file: ${{ steps.set_env.outputs.values_file }}
+  qc:
+    runs-on: 'ubuntu-latest'
+    environment: 'qc'
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-  
-    - name: Set Partner API_KEY and Values filename
-      run: |
-        ls -lah
-        environment="${{ github.event.inputs.environment }}"
-        
-        # Initialize variables
-        partner_api_key=""
-        filename=""
-        
-        # Use bash to set environment variables based on the input
-        if [[ "$environment" == "qc" ]]; then
-          partner_api_key="${{ secrets.QC_PARTNER_API_KEY }}"
-          filename="./values-qc.yaml"
-        elif [[ "$environment" == "preview" ]]; then
-          partner_api_key="${{ secrets.PREVIEW_PARTNER_API_KEY }}"
-          filename="./values-preview.yaml"
-        elif [[ "$environment" == "prod" ]]; then
-          partner_api_key="${{ secrets.PROD_PARTNER_API_KEY }}"
-          filename="./values-prod.yaml"
-        else
-          echo "Invalid environment input!"
-          exit 1
-        fi
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
 
-        # Set environment variables for future steps
-        # echo "PARTNER_API_KEY=${partner_api_key}" >> $GITHUB_ENV
-        # echo "VALUES_FILE=${filename}" >> $GITHUB_ENV
-        echo "values_file=${filename}" >> $GITHUB_OUTPUT
-      
-  dev:
+    - name: Install dependencies
+      run: |
+        pip install requests
+
+    - name: Build the artifact
+      run: |
+        echo "Deploying the application on the dev environment."
+    
+    - name: Run Template Loader script
+      working-directory: ./setup
+      run: |
+        echo "$VALYES_FILE"
+      env:
+        PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
+        VALUES_FILE: "./values-qc.yaml"
+  
+  preview:
     runs-on: 'ubuntu-latest'
     environment: 'dev'
     steps:
@@ -62,11 +49,19 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r ./setup/requirements.txt
+        pip install requests
 
     - name: Build the artifact
       run: |
         echo "Deploying the application on the dev environment."
+  
+    - name: Run Template Loader script
+      working-directory: ./setup
+      run: |
+        echo "$VALYES_FILE"
+      env:
+        PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
+        VALUES_FILE: "./values-preview.yaml"
   
   prod:
     runs-on: 'ubuntu-latest'
@@ -79,8 +74,12 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r ./setup/requirements.txt
+        pip install requests
 
-    - name: Build the artifact
+    - name: Run Template Loader script
+      working-directory: ./setup
       run: |
-        echo "Deploying the application on the prod environment."
+        echo "$VALYES_FILE"
+      env:
+        PARTNER_API_KEY: ${{ secrets.PARTNER_API_KEY }}
+        VALUES_FILE: "./values-prod.yaml"
