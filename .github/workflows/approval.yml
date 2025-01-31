@@ -1,0 +1,86 @@
+name: 'Action Approval'
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        default: "qc"
+        type: choice
+        options:
+          - qc
+          - preview
+          - prod
+
+
+jobs:
+  set-env:
+    runs-on: ubuntu-latest
+    outputs: 
+      values_file: ${{ steps.set_env.outputs.values_file }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+  
+    - name: Set Partner API_KEY and Values filename
+      run: |
+        ls -lah
+        environment="${{ github.event.inputs.environment }}"
+        
+        # Initialize variables
+        partner_api_key=""
+        filename=""
+        
+        # Use bash to set environment variables based on the input
+        if [[ "$environment" == "qc" ]]; then
+          partner_api_key="${{ secrets.QC_PARTNER_API_KEY }}"
+          filename="./values-qc.yaml"
+        elif [[ "$environment" == "preview" ]]; then
+          partner_api_key="${{ secrets.PREVIEW_PARTNER_API_KEY }}"
+          filename="./values-preview.yaml"
+        elif [[ "$environment" == "prod" ]]; then
+          partner_api_key="${{ secrets.PROD_PARTNER_API_KEY }}"
+          filename="./values-prod.yaml"
+        else
+          echo "Invalid environment input!"
+          exit 1
+        fi
+
+        # Set environment variables for future steps
+        # echo "PARTNER_API_KEY=${partner_api_key}" >> $GITHUB_ENV
+        # echo "VALUES_FILE=${filename}" >> $GITHUB_ENV
+        echo "values_file=${filename}" >> $GITHUB_OUTPUT
+      
+  dev:
+    runs-on: 'ubuntu-latest'
+    environment: 'dev'
+    steps:
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Install dependencies
+      run: |
+        pip install -r ./setup/requirements.txt
+
+    - name: Build the artifact
+      run: |
+        echo "Deploying the application on the dev environment."
+  
+  prod:
+    runs-on: 'ubuntu-latest'
+    environment: 'prod'
+    steps:
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Install dependencies
+      run: |
+        pip install -r ./setup/requirements.txt
+
+    - name: Build the artifact
+      run: |
+        echo "Deploying the application on the prod environment."
